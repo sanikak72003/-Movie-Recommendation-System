@@ -1,4 +1,5 @@
 .venv/
 .ipynb_checkpoints/
 *.pkl
+!movies.pkl
 .streamlit/secrets.toml
