@@ -1,20 +1,39 @@
 import requests # send req to external APIs
 import streamlit as stream
 import pickle
+import gdown
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent # Path finds the path of the parent of current file we are working in i.e app.py
-# current working file accesed with __file__
-# BASE_DIR stores path to parent folder of app.py i.e our movie-recommendation-system folder
+# # current working file accesed with __file__
+# # BASE_DIR stores path to parent folder of app.py i.e our movie-recommendation-system folder
 
-movies = pickle.load(open(BASE_DIR / 'movies.pkl', 'rb'))  # open specifies the path of file to open and store in movies object
-# BASE_DIR IS C:\Users\sanik\placement campusx\project\Movie-Recommendation-System and in front of that  'movies.pkl'
-# means entire path is specified to open the file movies.pkl and the path is
-# C:\Users\sanik\placement campusx\project\Movie-Recommendation-System\movies.pkl
-# load in binary and store in movies
+# movies = pickle.load(open(BASE_DIR / 'movies.pkl', 'rb'))  # open specifies the path of file to open and store in movies object
+# # BASE_DIR IS C:\Users\sanik\placement campusx\project\Movie-Recommendation-System and in front of that  'movies.pkl'
+# # means entire path is specified to open the file movies.pkl and the path is
+# # C:\Users\sanik\placement campusx\project\Movie-Recommendation-System\movies.pkl
+# # load in binary and store in movies
 
-similarity = pickle.load(open(BASE_DIR / 'sim.pkl', 'rb'))
-# same as above load sim matrix here
+# similarity = pickle.load(open(BASE_DIR / 'sim.pkl', 'rb'))
+# # same as above load sim matrix here
+
+# loading files
+movies_path = BASE_DIR / 'movies.pkl'
+similarity_path = BASE_DIR / 'sim.pkl'
+
+# Download similarity matrix if it doesn't exist
+if not similarity_path.exists():
+
+    url = 'https://drive.google.com/uc?id=18qI340U7D8TMTqZlJnkY4MnbmQNVoxvV'
+
+    with stream.spinner('Downloading movie similarity data...'):
+        gdown.download(url, str(similarity_path), quiet=False)
+
+# Load pickle files
+movies = pickle.load(open(movies_path, 'rb'))
+
+similarity = pickle.load(open(similarity_path, 'rb'))
 
 # API connection
 TMDB_API_TOKEN = stream.secrets["TMDB_API_TOKEN"]  # access the tmdb api token stored in .streamlit folder and secrets.toml file
@@ -39,16 +58,20 @@ def fetch_poster(movie_id):
 
     url = f"https://api.themoviedb.org/3/movie/{movie_id}"
 
-    response = requests.get(url, headers=headers)
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
 
-    if response.status_code == 200:
+        if response.status_code == 200:
 
-        data = response.json()
+            data = response.json()
 
-        poster_path = data.get('poster_path')
+            poster_path = data.get('poster_path')
 
-        if poster_path:
-            return "https://image.tmdb.org/t/p/w500" + poster_path
+            if poster_path:
+                return "https://image.tmdb.org/t/p/w500" + poster_path
+
+    except requests.exceptions.RequestException:
+        pass
 
     return None
 
