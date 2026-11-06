@@ -109,4 +109,4 @@ Deploy the application online so that it can be accessed publicly.
 Acknowledgements
 The Movie Database (TMDB) for movie data, metadata, and poster images.
 Scikit-learn for machine learning and text vectorization tools.
-Streamlit for building the interactive web application.
+Streamlit for building the interactive web application. 
